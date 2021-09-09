@@ -15,9 +15,14 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: config.get("app").session_Secure},
 }));
-
+app.use(require("../apps/middlewares/cart"));
+app.use(require("../apps/middlewares/share"));
 // sử dụng router
 app.use(require("../routers/web"));
 // định nghĩa đường dẫn 
 app.use("/static" , express.static(config.get("app").static_folder));
+//share 
+//server side rendering// --> data, 
+// client side redenring//-> react--> css fw
+
 module.exports = app;

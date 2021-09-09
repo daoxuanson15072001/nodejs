@@ -7,15 +7,15 @@ const productController = require("../apps/controllers/product");
 const testController = require("../apps/controllers/test");
 const userController = require("../apps/controllers/user");
 const categoryController = require("../apps/controllers/categories");
+const siteController = require("../apps/controllers/site");
+const chatController = require("../apps/controllers/chat");
     //goị middelware
 const authMiddlewares = require("../apps/middlewares/auth");
-const multer = require("multer");
-const upload = multer({
-    dest: __dirname+"../../temp",
-});
+const uploadMiddlewares = require("../apps/middlewares/upload");
+const { SchemaTypeOptions } = require("mongoose");
 router.get("/test" , testController.test);
 router.get("/upload" , testController.frmupload);
-router.post("/upload" ,upload.single("file_upload"), testController.file_upload);
+router.post("/upload" ,uploadMiddlewares.single("file_upload"), testController.file_upload);
 /*router.get("/form" , (req,res) => {     
    res.send(`
         <form method = post>
@@ -50,6 +50,7 @@ router.get("/admin/users/delete/:id" ,authMiddlewares.checkAdmin, (req,res)=> {
 router.get("/admin/categories" ,authMiddlewares.checkAdmin, categoryController.category);
 router.get("/admin/categories/create" ,authMiddlewares.checkAdmin, categoryController.create);
 router.get("/admin/categories/edit/:id" ,authMiddlewares.checkAdmin, categoryController.edit);
+
 router.get("/admin/categories/delete/:id" ,authMiddlewares.checkAdmin, (req,res)=> {
     res.send("admin");
 });
@@ -58,9 +59,26 @@ router.get("/admin/categories/delete/:id" ,authMiddlewares.checkAdmin, (req,res)
 router.get("/admin/products",authMiddlewares.checkAdmin, productController.index);
 router.get("/admin/products/create",authMiddlewares.checkAdmin, productController.create);
 
-router.post("/admin/products/create",upload.single("prd_image"), productController.add_product);
+router.post("/admin/products/create",uploadMiddlewares.single("prd_image"), productController.add_product);
 
-router.get("/admin/products/edit/:id",authMiddlewares.checkAdmin, productController.edit);
-router.get("/admin/products/delete/:id",authMiddlewares.checkAdmin, productController.del);
+router.get("/admin/products/edit/:id", productController.edit);
+router.post("/admin/products/update/:id",uploadMiddlewares.single("thumbnail"), productController.update);
+router.get("/admin/products/delete/:id", productController.del);
 
+router.get("/" , siteController.home);
+router.get("/cart" , siteController.cart);
+router.post("/update-cart" , siteController.updateCart);
+router.post("/addToCart" , siteController.addToCart);
+router.get("/del-cart-:id", siteController.delCart);
+router.get("/category" , siteController.category);
+router.get("/product-:slug.:id" , siteController.product);
+router.post("/product-:slug.:id" , siteController.comment); 
+ router.post("/order", siteController.order);
+router.get("/success" , siteController.success);
+router.get("/search" , siteController.search);
+router.get("/category-:slug.:id" ,siteController.category);
+
+router.get("/chat",authMiddlewares.checkUser , chatController.chat);
 module.exports = router;
+
+

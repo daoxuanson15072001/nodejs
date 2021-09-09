@@ -4,6 +4,7 @@ const paginate = require("../../common/paginate");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
+const slug = require("slug");
 const index = async(req,res) => {
     const page = parseInt(req.query.page) || 1 ;// cau lenh if
     const limit = 10;
@@ -46,11 +47,42 @@ const add_product = async(req,res) => {
     productInsert.save();
     console.log("con dog");
 }
-const edit = (req,res) => {
-    res.render("admin/product/edit_product");
+
+const edit = async(req,res) => {
+    const id = req.params.id;
+    const product = await ProductModel.findById(id);
+    const categories = await CategoryModel.find();
+    res.render("admin/product/edit_product", {categories:categories , product:product});
 }
-const del = (req,res) => {
-    res.send("delete");
+const del =async (req,res) => {
+    const id = req.params.id;
+    await ProductModel.deleteOne({_id:id});
+    res.redirect("/admin/products");
+}
+const update = async (req,res) => {
+    const id = req.params.id;
+    const body = req.body;
+    const file = req.file;
+    const product = {
+        description: body.description,
+        price: body.price,
+        cat_id: body.cat_id,
+        status: body.status,
+        featured: body.featured,
+        promotion: body.promotion,
+        warranty: body.warranty,
+        accessories: body.accessories,
+        is_stock: body.is_stock,
+        name: body.name,
+        slug: slug(body.name),
+    }
+    if(file) {
+        const thumbnail = "products/" + file.originalname;
+        product["thumbnail"] = thumbnail;
+        fs.renameSync(file.path, path.resolve("src/public/images", thumbnail));
+    }
+    await ProductModel.updateOne({_id:id} , {$set:(product)});
+    res.redirect("/admin/products");
 }
 module.exports = {
     index: index,
@@ -58,4 +90,5 @@ module.exports = {
     edit: edit,
     del: del,
     add_product:add_product,
+    update:update,
 }
